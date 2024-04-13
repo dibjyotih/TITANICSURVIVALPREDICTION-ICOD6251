@@ -1,0 +1,58 @@
+# Step 1: Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Step 2: Load the dataset
+titanic_data = pd.read_csv("train.csv")
+
+# Step 3: Data Preprocessing
+# Check for missing values
+print(titanic_data.isnull().sum())
+
+# Handle missing values
+titanic_data["Age"].fillna(titanic_data["Age"].median(), inplace=True)
+titanic_data["Embarked"].fillna(titanic_data["Embarked"].mode()[0], inplace=True)
+
+# Convert categorical variables into numerical
+titanic_data = pd.get_dummies(titanic_data, columns=["Sex", "Embarked"])
+
+# Drop irrelevant features
+titanic_data.drop(["PassengerId", "Name", "Ticket", "Cabin"], axis=1, inplace=True)
+
+# Step 4: Exploratory Data Analysis (EDA)
+sns.countplot(x="Survived", data=titanic_data)
+plt.show()
+
+sns.countplot(x="Survived", hue="Sex_male", data=titanic_data)
+plt.show()
+
+sns.countplot(x="Survived", hue="Pclass", data=titanic_data)
+plt.show()
+
+# Step 5: Feature Engineering (No additional features in this example)
+
+# Step 6: Model Selection and Training
+X = titanic_data.drop("Survived", axis=1)
+y = titanic_data["Survived"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 7: Model Training
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+rf_classifier = RandomForestClassifier(random_state=42)
+rf_classifier.fit(X_train_scaled, y_train)
+
+# Step 8: Model Evaluation
+y_pred = rf_classifier.predict(X_test_scaled)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
